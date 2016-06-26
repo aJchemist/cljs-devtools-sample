@@ -9,17 +9,14 @@
    [environ "1.0.3"]
    [boot-environ "1.0.3" :scope "test"]
 
-   [ajchemist/boot-figwheel "0.5.4-3"] ;; latest release
+   [ajchemist/boot-figwheel "0.5.4-4" :scope "test"] ;; latest release
    [org.clojure/tools.nrepl "0.2.12" :scope "test"]
    [com.cemerick/piggieback "0.2.1" :scope "test"]
    [figwheel-sidecar "0.5.4-4" :scope "test"]])
 
 (require
  'boot-figwheel
- '[environ.boot :refer [environ]]
- '[ring.middleware file]
- '[ring.util.response :as response]
- '[ring.util.mime-type :as mime])
+ '[environ.boot :refer [environ]])
 
 (refer 'boot-figwheel :rename '{cljs-repl fw-cljs-repl})
 
@@ -40,6 +37,11 @@
      :figwheel true}])
 
 (def http-server-root "resources/public")
+
+(require
+ '[ring.middleware file]
+ '[ring.util.response :as response]
+ '[ring.util.mime-type :as mime])
 
 (def ring-handler
   (-> (fn [{uri :uri}]
@@ -63,8 +65,11 @@
 (deftask demo []
   (merge-env! :source-paths #{"src/demo"}) 
   (comp
-   (figwheel :all-builds all-builds :figwheel-options fw-options :target-path http-server-root)
-   (boot-figwheel)
+   (figwheel
+    :build-ids ["demo"]
+    :all-builds all-builds
+    :figwheel-options fw-options
+    :target-path http-server-root)
    #_(target :dir #{"resources/public/_compiled/demo"} :no-clean true)
    (repl :server true)
    (wait)))
