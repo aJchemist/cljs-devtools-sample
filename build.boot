@@ -9,10 +9,10 @@
    [environ "1.0.3"]
    [boot-environ "1.0.3" :scope "test"]
 
-   [ajchemist/boot-figwheel "0.5.4-4" :scope "test"] ;; latest release
+   [ajchemist/boot-figwheel "0.5.4-5" :scope "test"] ;; latest release
    [org.clojure/tools.nrepl "0.2.12" :scope "test"]
    [com.cemerick/piggieback "0.2.1" :scope "test"]
-   [figwheel-sidecar "0.5.4-4" :scope "test"]])
+   [figwheel-sidecar "0.5.4-5" :scope "test"]])
 
 (require
  'boot-figwheel
@@ -26,15 +26,15 @@
       :description "An example integration of cljs-devtools"})
 
 (def all-builds
-  '[{:id "demo"
-     :source-paths ["src/demo"]
-     :compiler {:output-to     "_compiled/demo/devtools_sample.js"
-                :output-dir    ""
-                :main          devtools-sample.boot
-                :preloads      [devtools.preload]
-                :optimizations :none
-                :source-map    true}
-     :figwheel true}])
+  [{:id "demo"
+    :source-paths ["src/demo"]
+    :compiler {:output-to     "_compiled/demo/devtools_sample.js"
+               :output-dir    ""
+               :main          'devtools-sample.boot
+               :preloads      ['devtools.preload]
+               :optimizations :none
+               :source-map    true}
+    :figwheel true}])
 
 (def http-server-root "resources/public")
 
@@ -62,14 +62,17 @@
    :server-logfile ".figwheel_server.log"
    :ring-handler 'boot.user/ring-handler})
 
-(deftask demo []
+(deftask demo-figwheel []
   (merge-env! :source-paths #{"src/demo"}) 
+  (figwheel
+   :build-ids ["demo"]
+   :all-builds all-builds
+   :figwheel-options fw-options
+   :target-path http-server-root))
+
+(deftask demo []
   (comp
-   (figwheel
-    :build-ids ["demo"]
-    :all-builds all-builds
-    :figwheel-options fw-options
-    :target-path http-server-root)
    #_(target :dir #{"resources/public/_compiled/demo"} :no-clean true)
    (repl :server true)
+   (demo-figwheel)
    (wait)))
