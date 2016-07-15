@@ -9,10 +9,10 @@
    [environ "1.0.3"]
    [boot-environ "1.0.3" :scope "test"]
 
-   [ajchemist/boot-figwheel "0.5.4-5" :scope "test"] ;; latest release
+   [ajchemist/boot-figwheel "0.5.4-6" :scope "test"] ;; latest release
    [org.clojure/tools.nrepl "0.2.12" :scope "test"]
    [com.cemerick/piggieback "0.2.1" :scope "test"]
-   [figwheel-sidecar "0.5.4-5" :scope "test"]])
+   [figwheel-sidecar "0.5.4-7" :scope "test"]])
 
 (require
  'boot-figwheel
@@ -63,7 +63,7 @@
    :ring-handler 'boot.user/ring-handler})
 
 (deftask demo-figwheel []
-  (merge-env! :source-paths #{"src/demo"}) 
+  (merge-env! :source-paths #{"src/demo"})
   (figwheel
    :build-ids ["demo"]
    :all-builds all-builds
