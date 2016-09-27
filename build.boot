@@ -1,22 +1,28 @@
 (set-env!
  :dependencies
  '[[org.clojure/clojure "1.8.0" :scope "provided"]
-   [org.clojure/clojurescript "1.9.89" :scope "provided"]
+   [org.clojure/clojurescript "1.9.229" :scope "provided"]
+   [org.clojure/core.async "0.2.391"]
+   [binaryage/devtools "0.8.2"]
+   [binaryage/dirac "0.6.6"]
 
-   [binaryage/devtools "0.7.2"]
-   [com.cognitect/transit-clj "0.8.285"]
+   [com.cognitect/transit-clj "0.8.288"]
    [cljs-http "0.1.41"]
-   [environ "1.0.3"]
-   [boot-environ "1.0.3" :scope "test"]
+   [environ "1.1.0"]
+   [boot-environ "1.1.0" :scope "test"]
 
    [ajchemist/boot-figwheel "0.5.4-6" :scope "test"] ;; latest release
    [org.clojure/tools.nrepl "0.2.12" :scope "test"]
    [com.cemerick/piggieback "0.2.1" :scope "test"]
-   [figwheel-sidecar "0.5.4-7" :scope "test"]])
+   [figwheel-sidecar "0.5.7" :scope "test"]])
 
 (require
  'boot-figwheel
  '[environ.boot :refer [environ]])
+
+(require 'boot.repl)
+(swap! boot.repl/*default-middleware*
+       conj 'cemerick.piggieback/wrap-cljs-repl)
 
 (refer 'boot-figwheel :rename '{cljs-repl fw-cljs-repl})
 
@@ -28,12 +34,13 @@
 (def all-builds
   [{:id "demo"
     :source-paths ["src/demo"]
-    :compiler {:output-to     "_compiled/demo/devtools_sample.js"
-               :output-dir    ""
-               :main          'devtools-sample.boot
-               :preloads      ['devtools.preload]
-               :optimizations :none
-               :source-map    true}
+    :compiler '{:main          devtools-sample.boot
+                :output-to     "_compiled/demo/devtools_sample.js"
+                :output-dir    ""
+                :tooling-config {:devtools/config {:features-to-install :all}}
+                :preloads       [devtools.preload]
+                :optimizations  :none
+                :source-map     true}
     :figwheel true}])
 
 (def http-server-root "resources/public")
@@ -60,7 +67,8 @@
 (def fw-options
   {:server-port 7000
    :server-logfile ".figwheel_server.log"
-   :ring-handler 'boot.user/ring-handler})
+   :ring-handler 'boot.user/ring-handler
+   :validate-config false})
 
 (deftask demo-figwheel []
   (merge-env! :source-paths #{"src/demo"})
@@ -73,6 +81,6 @@
 (deftask demo []
   (comp
    #_(target :dir #{"resources/public/_compiled/demo"} :no-clean true)
-   (repl :server true)
    (demo-figwheel)
+   (repl :server true)
    (wait)))
